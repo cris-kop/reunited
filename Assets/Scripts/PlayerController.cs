@@ -4,8 +4,15 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    // General
+    public int playerId;
+
     // Movement properties
     public float moveSpeed;
+    public float jumpSpeed;
+    public float maxPlayerHeight;
+    public float walkLimiter;
+    private float lastMovement;
 
     private bool LTpressedLastUpdate = false;
     private bool LSpressedLastUpdate = false;
@@ -22,20 +29,22 @@ public class PlayerController : MonoBehaviour
     public string InputWalkRightA;
     public string InputWalkRightB;
 
+    public string InputJump;
+
+    // Sounds
+    public AudioSource walkSoundA;
+    public AudioSource walkSoundB;
+    public AudioSource jumpSound;
+
     // Phyics/logics
     private Rigidbody rb;
+    private bool jumped = false;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
-        string[] controllerNames;
-        controllerNames = Input.GetJoystickNames();
-
-        Debug.Log("Joystick name: " + controllerNames[0]);
-        Debug.Log("Joystick name: " + controllerNames[1]);
-        Debug.Log("Joystick name: " + controllerNames[2]);
+        lastMovement = Time.time;
     }
 
     // Fixed update for physics/ fixed timestep
@@ -49,28 +58,22 @@ public class PlayerController : MonoBehaviour
         RTpressedCurrUpdate = Input.GetAxis(InputWalkRightA) == -1;
         RSpressedCurrUpdate = Input.GetButton(InputWalkRightB);
 
-        // FORWARD
-        if (RTpressedLastUpdate && RSpressedCurrUpdate)
+        // Any trigger or shoulder pressed?
+        if (LTpressedCurrUpdate || LSpressedCurrUpdate || RTpressedCurrUpdate || RSpressedCurrUpdate)
         {
-            Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-        }
-        else if (RSpressedLastUpdate && RTpressedCurrUpdate)
-        {
-            Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-        }
-
-        // BACKWARD
-        if (LTpressedLastUpdate && LSpressedCurrUpdate)
-        {
-            Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-        }
-        else if (LSpressedLastUpdate && LTpressedCurrUpdate)
-        {
-            Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
+            if ((LTpressedCurrUpdate && LSpressedCurrUpdate) || (RSpressedCurrUpdate && RTpressedCurrUpdate))
+            {
+                if (Time.time > lastMovement + walkLimiter)
+                {
+                    // Not pressed at the same time? how to fix?
+                    MovePlayer();
+                    lastMovement = Time.time;
+                }
+            }
+            else
+            {
+                MovePlayer();
+            }
         }
 
         LTpressedLastUpdate = LTpressedCurrUpdate;
@@ -78,11 +81,71 @@ public class PlayerController : MonoBehaviour
 
         RTpressedLastUpdate = RTpressedCurrUpdate;
         RSpressedLastUpdate = RSpressedCurrUpdate;
+
+        if(jumped)
+        {
+            Debug.Log("Player height: " + transform.position.y);
+            if (transform.position.y < maxPlayerHeight)
+            {
+                JumpPlayer();
+            }
+            jumped = false;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetButtonDown(InputJump))
+        {
+            jumped = true;
+        }
+    }
 
+    // DIY functions
+    private void JumpPlayer()
+    {
+        //rb.velocity += jumpSpeed * new Vector3(0.0f, 1.0f, 0.0f);
+        rb.AddForce(new Vector3(0.0f, jumpSpeed, 0.0f));
+        if (!jumpSound.isPlaying)
+        {
+            jumpSound.Play();
+        }
+    }
+
+
+    private void MovePlayer()
+    {
+        // FORWARD
+        if (RTpressedLastUpdate && RSpressedCurrUpdate)
+        {
+            Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
+            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
+
+            walkSoundA.Play();
+        }
+        else if (RSpressedLastUpdate && RTpressedCurrUpdate)
+        {
+            Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
+            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
+
+            walkSoundB.Play();
+        }
+
+        // BACKWARD
+        if (LTpressedLastUpdate && LSpressedCurrUpdate)
+        {
+            Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
+            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
+
+            walkSoundA.Play();
+        }
+        else if (LSpressedLastUpdate && LTpressedCurrUpdate)
+        {
+            Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
+            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
+
+            walkSoundB.Play();
+        }
     }
 }
