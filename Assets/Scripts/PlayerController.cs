@@ -35,10 +35,15 @@ public class PlayerController : MonoBehaviour
     public AudioSource walkSoundA;
     public AudioSource walkSoundB;
     public AudioSource jumpSound;
-    
+
+    public float _min = .2f;
+
     // Phyics/logics
     private Rigidbody rb;
     private bool jumped = false;
+
+    // Sprites for animations
+    public Animator walkAnimation;
 
     // Start is called before the first frame update
     void Start()
@@ -106,20 +111,23 @@ public class PlayerController : MonoBehaviour
     {
         //rb.velocity += jumpSpeed * new Vector3(0.0f, 1.0f, 0.0f);
         rb.AddForce(new Vector3(0.0f, jumpSpeed, 0.0f));
-        //if (!jumpSound.isPlaying)
-        //{
+        if (!jumpSound.isPlaying)
+        {
             jumpSound.Play();
-        //}
+        }
     }
 
 
     private void MovePlayer()
     {
+        var isMoving = false;
+
         // FORWARD
         if (RTpressedLastUpdate && RSpressedCurrUpdate)
         {
             Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
+            isMoving = true;
 
             walkSoundA.Play();
         }
@@ -127,7 +135,7 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-
+            isMoving = true;
             walkSoundB.Play();
         }
 
@@ -136,15 +144,17 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-
+            isMoving = true;
             walkSoundA.Play();
         }
         else if (LSpressedLastUpdate && LTpressedCurrUpdate)
         {
             Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-
+            isMoving = true;
             walkSoundB.Play();
         }
+
+        walkAnimation.SetBool("Walking", isMoving);
     }
 }

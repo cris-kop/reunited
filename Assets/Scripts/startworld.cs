@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class startworld : MonoBehaviour
 {
-
     public AudioSource backgroundMusic;
 
     // Start is called before the first frame update
