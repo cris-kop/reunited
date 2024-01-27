@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour
     public AudioSource walkSoundA;
     public AudioSource walkSoundB;
     public AudioSource jumpSound;
-
+    
     // Phyics/logics
     private Rigidbody rb;
     private bool jumped = false;
@@ -84,7 +84,6 @@ public class PlayerController : MonoBehaviour
 
         if(jumped)
         {
-            Debug.Log("Player height: " + transform.position.y);
             if (transform.position.y < maxPlayerHeight)
             {
                 JumpPlayer();
@@ -107,10 +106,10 @@ public class PlayerController : MonoBehaviour
     {
         //rb.velocity += jumpSpeed * new Vector3(0.0f, 1.0f, 0.0f);
         rb.AddForce(new Vector3(0.0f, jumpSpeed, 0.0f));
-        if (!jumpSound.isPlaying)
-        {
+        //if (!jumpSound.isPlaying)
+        //{
             jumpSound.Play();
-        }
+        //}
     }
 
 
