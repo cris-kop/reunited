@@ -13,6 +13,10 @@ public class PlayerController : MonoBehaviour
     public float maxPlayerHeight;
     public float walkLimiter;
     private float lastMovement;
+    public GameObject animation;
+    private bool walking;
+    private bool jumping;
+    private Animator animator;
 
     private bool LTpressedLastUpdate = false;
     private bool LSpressedLastUpdate = false;
@@ -45,6 +49,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         lastMovement = Time.time;
+        animator = GetComponentInChildren<Animator>();
     }
 
     // Fixed update for physics/ fixed timestep
@@ -74,6 +79,7 @@ public class PlayerController : MonoBehaviour
             {
                 MovePlayer();
             }
+            animator.SetBool("walk", false);
         }
 
         LTpressedLastUpdate = LTpressedCurrUpdate;
@@ -99,7 +105,9 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown(InputJump))
         {
             jumped = true;
+            animator.SetBool("jump", true);
         }
+        animator.SetBool("jump", false)
     }
 
     // DIY functions
@@ -113,7 +121,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     private void MovePlayer()
     {
         // FORWARD
@@ -123,6 +130,7 @@ public class PlayerController : MonoBehaviour
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
 
             walkSoundA.Play();
+            animator.SetBool("walk", true);
         }
         else if (RSpressedLastUpdate && RTpressedCurrUpdate)
         {
@@ -130,6 +138,7 @@ public class PlayerController : MonoBehaviour
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
 
             walkSoundB.Play();
+            animator.SetBool("walk", true);
         }
 
         // BACKWARD
@@ -139,6 +148,7 @@ public class PlayerController : MonoBehaviour
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
 
             walkSoundA.Play();
+            animator.SetBool("walk", true);
         }
         else if (LSpressedLastUpdate && LTpressedCurrUpdate)
         {
@@ -146,6 +156,7 @@ public class PlayerController : MonoBehaviour
             rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
 
             walkSoundB.Play();
+            animator.SetBool("walk", true);
         }
     }
 }
