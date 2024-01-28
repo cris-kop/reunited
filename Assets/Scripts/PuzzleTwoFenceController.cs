@@ -14,12 +14,13 @@ public class PuzzleTwoFenceLowController : MonoBehaviour
     void Start()
     {
         isReleasing = false;
+        isReleased = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!isReleased && isReleasing)
+        if (!isReleased && isReleasing)
         {
             Debug.Log("Function to release fence called!");
             if(transform.position.z < maxZbeforeDestroy)

@@ -37,7 +37,9 @@ public class PlayerController : MonoBehaviour
     // Sounds
     public AudioSource walkSoundA;
     public AudioSource walkSoundB;
-    public AudioSource jumpSound;
+    public AudioSource jumpSoundPlayer1;
+    public AudioSource jumpSoundPlayer2;
+    public AudioSource playerDiedSound;
 
     // Phyics/logics
     private Rigidbody rb;
@@ -107,26 +109,62 @@ public class PlayerController : MonoBehaviour
         }
 
         // player 1 falling, reset
-        if(transform.position.y < -6.0f)
+        if (transform.position.y < -6.0f)
         {
             Vector3 newPos = transform.position;
-            newPos.x = -44.0f;
-            newPos.y = 4.85f;
+
+            if (transform.position.x < 10.0f)
+            {
+                newPos.x = -44.0f;
+                newPos.y = 4.85f;
+            }
+            if (transform.position.x > 10.0f)
+            {
+                newPos.x = 19.0f;
+                newPos.y = 4.85f;
+            }
             transform.position = newPos;
+
+        }
+        if (transform.position.y < -2.0f && transform.position.y > -3.0f)
+        { 
+            playerDiedSound.Play();
         }
     }
+
+    void OnCollisionEnter(Collision other)
+    {
+        Debug.Log("Collision on player detected");
+        if (playerId == 1)
+        {
+            if (other.gameObject.name == "PlayerTwo")
+            {
+                // go to end scene
+            }
+        }
+    }
+
 
     // DIY functions
     private void JumpPlayer()
     {
         //rb.velocity += jumpSpeed * new Vector3(0.0f, 1.0f, 0.0f);
         rb.AddForce(new Vector3(0.0f, jumpSpeed, 0.0f));
-        if (!jumpSound.isPlaying)
+        if (playerId == 2)
         {
-            jumpSound.Play();
+            if (!jumpSoundPlayer1.isPlaying)
+            {
+                jumpSoundPlayer1.Play();
+            }
+        }
+        if (playerId == 1)
+        {
+            if (!jumpSoundPlayer2.isPlaying)
+            {
+                jumpSoundPlayer2.Play();
+            }
         }
     }
-
 
     private void MovePlayer()
     {

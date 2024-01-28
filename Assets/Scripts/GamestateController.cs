@@ -6,6 +6,7 @@ public class GamestateController : MonoBehaviour
 {
     public bool puzzle1solved = false;
     public bool puzzle2solved = false;
+    public bool puzzle3solved = false;
 
     public GameObject player1;
     public GameObject player2;
@@ -18,9 +19,12 @@ public class GamestateController : MonoBehaviour
     public Puzzle1ButtonController puzzle1;
     public GameObject puzzle1blocker;
     public GameObject puzzle1blockercollider;
+    public GameObject blockerAfterPuzzle2;
 
     private int currCamPos = 0;
     public float camPosAfterPuzzle1 = -23.0f;
+    public float camPosAfterPuzzle2 = 33.0f;
+    public float camPosAfterPuzzle3 = 67.0f;
 
     public bool puzzle2player1onbutton = false;
     public bool puzzle2player2onbutton = false;
@@ -41,9 +45,7 @@ public class GamestateController : MonoBehaviour
     {
         // PUZZLE 1
         if(player1.transform.position.x > puzzle1solvedXplayer1)
-        {
-            Debug.Log("Here the sound should play!");
-            
+        {           
             puzzle1solved = true;
             puzzle1.finished = true;
             puzzle1.upSpeed = puzzle1.upSpeed * 2.0f;
@@ -73,13 +75,13 @@ public class GamestateController : MonoBehaviour
             if (newCamPos.x > camPosAfterPuzzle1)
             {
                 currCamPos = 1;
-                player1controller.maxPlayerHeight = 10.5f;
+                player1controller.maxPlayerHeight = 9.5f;
                 player2controller.maxPlayerHeight = 27.0f;
             }
          }
 
         // PUZZLE 2
-        if (!puzzle2solved)
+        if (puzzle1solved) // && currCamPos == 1)
         {
             if (puzzle2player1onbutton && puzzle2player2onbutton)
             {
@@ -87,6 +89,33 @@ public class GamestateController : MonoBehaviour
                 puzzle2fencehigh.isReleasing = true;
 
                 puzzle2solved = true;
+                blockerAfterPuzzle2.SetActive(true);
+            }
+        }
+        if(puzzle2solved && currCamPos == 1)
+        { 
+            Vector3 newCamPos = primaryCamera.transform.position;
+            newCamPos.x = newCamPos.x + 0.5f;
+
+            primaryCamera.transform.position = newCamPos;
+
+            if (newCamPos.x > camPosAfterPuzzle2)
+            {
+                currCamPos = 2;
+            }
+        }
+
+        // PUZZLE 3 solved?
+        if(currCamPos == 2 && player1.transform.position.x > 48.0f)
+        {
+            Vector3 newCamPos = primaryCamera.transform.position;
+            newCamPos.x = newCamPos.x + 0.5f;
+
+            primaryCamera.transform.position = newCamPos;
+
+            if (newCamPos.x > camPosAfterPuzzle3)
+            {
+                currCamPos = 3;
             }
         }
     }
