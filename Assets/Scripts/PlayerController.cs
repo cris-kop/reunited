@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    // Gamestate
+    public GamestateController gameState;
+
     // General
     public int playerId;
 
@@ -36,8 +39,6 @@ public class PlayerController : MonoBehaviour
     public AudioSource walkSoundB;
     public AudioSource jumpSound;
 
-    public float _min = .2f;
-
     // Phyics/logics
     private Rigidbody rb;
     private bool jumped = false;
@@ -52,7 +53,7 @@ public class PlayerController : MonoBehaviour
         lastMovement = Time.time;
     }
 
-    // Fixed update for physics/ fixed timestep
+     // Fixed update for physics/ fixed timestep
     void FixedUpdate()
     {
         // Move forward right trigger + right shoulder
@@ -103,6 +104,15 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown(InputJump))
         {
             jumped = true;
+        }
+
+        // player 1 falling, reset
+        if(transform.position.y < -6.0f)
+        {
+            Vector3 newPos = transform.position;
+            newPos.x = -44.0f;
+            newPos.y = 4.85f;
+            transform.position = newPos;
         }
     }
 

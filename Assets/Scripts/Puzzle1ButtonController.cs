@@ -7,9 +7,12 @@ public class Puzzle1ButtonController : MonoBehaviour
     public GameObject puzzleWall;
     public float downSpeed;
     public float upSpeed;
+    public bool finished = false;
 
     private float initPosY;
-    
+
+    public GamestateController gameState;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,27 +24,32 @@ public class Puzzle1ButtonController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(puzzleWall.transform.position.y < initPosY)
+        if (puzzleWall.transform.position.y < initPosY)
         {
             Vector3 newPos = puzzleWall.transform.position;
             newPos.y = newPos.y + (upSpeed * Time.deltaTime);
-
             puzzleWall.transform.position = newPos;
         }
+        if (puzzleWall.transform.position.y > initPosY)
+        {
+            Vector3 newPos = puzzleWall.transform.position;
+            newPos.y = initPosY;
+            puzzleWall.transform.position = newPos;
+        }
+
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag == "Player")
+        if (!finished)
         {
-            //Debug.Log("Player hit button!");
+            if (other.gameObject.tag == "Player")
+            {
+                Vector3 newPos = puzzleWall.transform.position;
+                newPos.y = newPos.y - downSpeed;
 
-            Vector3 newPos = puzzleWall.transform.position;
-            newPos.y = newPos.y - downSpeed;
-
-            // deltaT???? moet dit?
-            puzzleWall.transform.position = newPos;
+                puzzleWall.transform.position = newPos;
+            }
         }
-
     }
 }
