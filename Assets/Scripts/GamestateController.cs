@@ -33,6 +33,10 @@ public class GamestateController : MonoBehaviour
 
     public AudioSource releaseBlockerSound;
 
+    public AudioSource jokeSound1;
+    public AudioSource jokeSound2;
+    public AudioSource jokeSound3;
+
     // awake
     void Awake()
     {
@@ -50,14 +54,18 @@ public class GamestateController : MonoBehaviour
             puzzle1.finished = true;
             puzzle1.upSpeed = puzzle1.upSpeed * 2.0f;
 
-            if (puzzle1blocker && puzzle1blocker.transform.position.y < 53.0f)
+            //if (puzzle1blocker && puzzle1blocker.transform.position.y < 53.0f)
+            if (puzzle1blocker.transform.position.y < 53.0f)
             {
                 releaseBlockerSound.Play();
-                puzzle1blocker.GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, 6.0f, 0.0f));
+                //puzzle1blocker.GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, 6.0f, 0.0f));
+                Vector3 testPos = puzzle1blocker.transform.position;
+                testPos.y = 53.0f;
+                puzzle1blocker.transform.position = testPos;
             }
             else
             {
-                Destroy(puzzle1blocker);
+                //Destroy(puzzle1blocker);
 
                 Vector3 newColliderPos = puzzle1blockercollider.transform.position;
                 newColliderPos.x = -55.7f;
@@ -77,11 +85,12 @@ public class GamestateController : MonoBehaviour
                 currCamPos = 1;
                 player1controller.maxPlayerHeight = 9.5f;
                 player2controller.maxPlayerHeight = 27.0f;
+                jokeSound1.Play();
             }
          }
 
         // PUZZLE 2
-        if (puzzle1solved) // && currCamPos == 1)
+        if (puzzle1solved && currCamPos == 1)
         {
             if (puzzle2player1onbutton && puzzle2player2onbutton)
             {
@@ -90,9 +99,12 @@ public class GamestateController : MonoBehaviour
 
                 puzzle2solved = true;
                 blockerAfterPuzzle2.SetActive(true);
+
+                player1controller.maxPlayerHeight = 8.0f;
+                jokeSound2.Play();
             }
         }
-        if(puzzle2solved && currCamPos == 1)
+        if(puzzle2solved && currCamPos == 1 && puzzle2fencelow.isReleased)
         { 
             Vector3 newCamPos = primaryCamera.transform.position;
             newCamPos.x = newCamPos.x + 0.5f;
@@ -117,6 +129,10 @@ public class GamestateController : MonoBehaviour
             {
                 currCamPos = 3;
             }
+
+            player1controller.maxPlayerHeight = 5.5f;
+            player2controller.maxPlayerHeight = 25.0f;
+            jokeSound3.Play();
         }
     }
 }

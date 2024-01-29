@@ -7,8 +7,8 @@ public class PuzzleTwoFenceLowController : MonoBehaviour
     public bool isReleasing;
     public float releaseSpeed;
 
-    private bool isReleased;
-    private float maxZbeforeDestroy = 20.0f;
+    public bool isReleased;
+    private float maxZbeforeDestroy = 10.5f;
 
     // Start is called before the first frame update
     void Start()

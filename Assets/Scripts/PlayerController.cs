@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -134,12 +135,11 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter(Collision other)
     {
-        Debug.Log("Collision on player detected");
         if (playerId == 1)
         {
             if (other.gameObject.name == "PlayerTwo")
             {
-                // go to end scene
+                SceneManager.LoadScene("EndSceneWithVideo");
             }
         }
     }
