@@ -21,7 +21,9 @@ public class GamestateController : MonoBehaviour
     public GameObject puzzle1blockercollider;
     public GameObject blockerAfterPuzzle2;
 
-    private int currCamPos = 0;
+    public GameObject instructions;
+
+    public int currCamPos = 0;
     public float camPosAfterPuzzle1 = -23.0f;
     public float camPosAfterPuzzle2 = 33.0f;
     public float camPosAfterPuzzle3 = 67.0f;
@@ -32,44 +34,55 @@ public class GamestateController : MonoBehaviour
     public PuzzleTwoFenceLowController puzzle2fencehigh;
 
     public AudioSource releaseBlockerSound;
+    private bool blockerSoundPlayed = false;
 
     public AudioSource jokeSound1;
     public AudioSource jokeSound2;
     public AudioSource jokeSound3;
 
-    // awake
-    void Awake()
+    private bool instructionsVisible = true;
+    private float gameStartTime;
+
+    void Start()
     {
-        puzzle1solved = false;
-        puzzle2solved = false;
+        gameStartTime = Time.time;
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        if(instructionsVisible)
+        {
+            if(Time.time > gameStartTime + 10)
+            {
+                Destroy(instructions);
+                instructionsVisible = false;
+            }
+        }
+        
         // PUZZLE 1
-        if(player1.transform.position.x > puzzle1solvedXplayer1)
+        if(player1.transform.position.x > puzzle1solvedXplayer1 && !puzzle1solved)
         {           
-            puzzle1solved = true;
-            puzzle1.finished = true;
             puzzle1.upSpeed = puzzle1.upSpeed * 2.0f;
 
-            //if (puzzle1blocker && puzzle1blocker.transform.position.y < 53.0f)
-            if (puzzle1blocker.transform.position.y < 53.0f)
+            if (puzzle1blocker && puzzle1blocker.transform.position.y < 53.0f)
             {
-                releaseBlockerSound.Play();
-                //puzzle1blocker.GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, 6.0f, 0.0f));
-                Vector3 testPos = puzzle1blocker.transform.position;
-                testPos.y = 53.0f;
-                puzzle1blocker.transform.position = testPos;
+                if (!blockerSoundPlayed)
+                {
+                    releaseBlockerSound.Play();
+                    blockerSoundPlayed = true;
+                }
+                puzzle1blocker.GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, 20.0f, 0.0f));
             }
             else
             {
-                //Destroy(puzzle1blocker);
+                Destroy(puzzle1blocker);
 
                 Vector3 newColliderPos = puzzle1blockercollider.transform.position;
                 newColliderPos.x = -55.7f;
                 puzzle1blockercollider.transform.position = newColliderPos;
+
+                puzzle1solved = true;
             }
         }
 
@@ -83,8 +96,6 @@ public class GamestateController : MonoBehaviour
             if (newCamPos.x > camPosAfterPuzzle1)
             {
                 currCamPos = 1;
-                player1controller.maxPlayerHeight = 9.5f;
-                player2controller.maxPlayerHeight = 27.0f;
                 jokeSound1.Play();
             }
          }
@@ -92,7 +103,7 @@ public class GamestateController : MonoBehaviour
         // PUZZLE 2
         if (puzzle1solved && currCamPos == 1)
         {
-            if (puzzle2player1onbutton && puzzle2player2onbutton)
+            if (puzzle2player1onbutton && puzzle2player2onbutton && !puzzle2solved)
             {
                 puzzle2fencelow.isReleasing = true;
                 puzzle2fencehigh.isReleasing = true;
@@ -100,7 +111,6 @@ public class GamestateController : MonoBehaviour
                 puzzle2solved = true;
                 blockerAfterPuzzle2.SetActive(true);
 
-                player1controller.maxPlayerHeight = 8.0f;
                 jokeSound2.Play();
             }
         }
@@ -114,6 +124,9 @@ public class GamestateController : MonoBehaviour
             if (newCamPos.x > camPosAfterPuzzle2)
             {
                 currCamPos = 2;
+                Vector3 newColliderPos = puzzle1blockercollider.transform.position;
+                newColliderPos.x = 2.5f;
+                puzzle1blockercollider.transform.position = newColliderPos;
             }
         }
 
@@ -128,11 +141,13 @@ public class GamestateController : MonoBehaviour
             if (newCamPos.x > camPosAfterPuzzle3)
             {
                 currCamPos = 3;
-            }
 
-            player1controller.maxPlayerHeight = 5.5f;
-            player2controller.maxPlayerHeight = 25.0f;
-            jokeSound3.Play();
+                Vector3 newColliderPos = puzzle1blockercollider.transform.position;
+                newColliderPos.x = 29.0f;
+                puzzle1blockercollider.transform.position = newColliderPos;
+
+                jokeSound3.Play();
+            }
         }
     }
 }

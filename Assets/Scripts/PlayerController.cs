@@ -5,47 +5,54 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Gamestate
+    // Global Gamestate
     public GamestateController gameState;
 
     // General
     public int playerId;
+    private bool usesController;
+
+    // Player input
+    public string CtrlWalkLeftA;
+    public string CtrlWalkLeftB;
+    public string CtrlWalkRightA;
+    public string CtrlWalkRightB;
+    public string CtrlJump;
+    
+    public string KbdWalkLeftA;
+    public string KbdWalkLeftB;
+    public string KbdWalkRightA;
+    public string KbdWalkRightB;
+    public string KbdJump;
 
     // Movement properties
     public float moveSpeed;
     public float jumpSpeed;
-    public float maxPlayerHeight;
     public float walkLimiter;
     private float lastMovement;
+    private bool isGrounded = false;
 
-    private bool LTpressedLastUpdate = false;
-    private bool LSpressedLastUpdate = false;
-    private bool RTpressedLastUpdate = false;
-    private bool RSpressedLastUpdate = false;
+    private bool walkLeftALastUpdate = false;
+    private bool walkLeftBLastUpdate = false;
+    private bool walkRightALastUpdate = false;
+    private bool walkRightBLastUpdate = false;
 
-    private bool LTpressedCurrUpdate = false;
-    private bool LSpressedCurrUpdate = false;
-    private bool RTpressedCurrUpdate = false;
-    private bool RSpressedCurrUpdate = false;
+    private bool walkLeftACurrUpdate = false;
+    private bool walkLeftBCurrUpdate = false;
+    private bool walkRightACurrUpdate = false;
+    private bool walkRightBCurrUpdate = false;
 
-    public string InputWalkLeftA;
-    public string InputWalkLeftB;
-    public string InputWalkRightA;
-    public string InputWalkRightB;
-
-    public string InputJump;
-
+    private bool jumped = false;
+    
     // Sounds
     public AudioSource walkSoundA;
     public AudioSource walkSoundB;
-    public AudioSource jumpSoundPlayer1;
-    public AudioSource jumpSoundPlayer2;
+    public AudioSource jumpSound;
     public AudioSource playerDiedSound;
 
     // Phyics/logics
     private Rigidbody rb;
-    private bool jumped = false;
-
+    
     // Sprites for animations
     public Animator walkAnimation;
 
@@ -54,83 +61,30 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         lastMovement = Time.time;
+        usesController = UseController();
     }
 
-     // Fixed update for physics/ fixed timestep
+    // Fixed update for physics/ fixed timestep
     void FixedUpdate()
     {
-        // Move forward right trigger + right shoulder
-        // Move backward left trigger + left shoulder
-        LTpressedCurrUpdate = Input.GetAxis(InputWalkLeftA) == -1;
-        LSpressedCurrUpdate = Input.GetButton(InputWalkLeftB);
-
-        RTpressedCurrUpdate = Input.GetAxis(InputWalkRightA) == -1;
-        RSpressedCurrUpdate = Input.GetButton(InputWalkRightB);
-
-        // Any trigger or shoulder pressed?
-        if (LTpressedCurrUpdate || LSpressedCurrUpdate || RTpressedCurrUpdate || RSpressedCurrUpdate)
-        {
-            if ((LTpressedCurrUpdate && LSpressedCurrUpdate) || (RSpressedCurrUpdate && RTpressedCurrUpdate))
-            {
-                if (Time.time > lastMovement + walkLimiter)
-                {
-                    // Not pressed at the same time? how to fix?
-                    MovePlayer();
-                    lastMovement = Time.time;
-                }
-            }
-            else
-            {
-                MovePlayer();
-            }
-        }
-
-        LTpressedLastUpdate = LTpressedCurrUpdate;
-        LSpressedLastUpdate = LSpressedCurrUpdate;
-
-        RTpressedLastUpdate = RTpressedCurrUpdate;
-        RSpressedLastUpdate = RSpressedCurrUpdate;
+        PlayerMove();
 
         if(jumped)
         {
-            if (transform.position.y < maxPlayerHeight)
+            if (isGrounded)
             {
-                JumpPlayer();
+                // needs to be in fixedUpdate because of AddForce
+                PlayerJump();
             }
-            jumped = false;
         }
+        ResetInput();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButtonDown(InputJump))
-        {
-            jumped = true;
-        }
-
-        // player 1 falling, reset
-        if (transform.position.y < -6.0f)
-        {
-            Vector3 newPos = transform.position;
-
-            if (transform.position.x < 10.0f)
-            {
-                newPos.x = -44.0f;
-                newPos.y = 4.85f;
-            }
-            if (transform.position.x > 10.0f)
-            {
-                newPos.x = 19.0f;
-                newPos.y = 4.85f;
-            }
-            transform.position = newPos;
-
-        }
-        if (transform.position.y < -2.0f && transform.position.y > -3.0f)
-        { 
-            playerDiedSound.Play();
-        }
+        GetInput();
+        HandlePlayerDied();
     }
 
     void OnCollisionEnter(Collision other)
@@ -144,65 +98,204 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     // DIY functions
-    private void JumpPlayer()
+    private void HandlePlayerDied()
+    {
+        // only player 1 can die, ground/lower floor
+        if (transform.position.y < -6.0f)
+        {
+            Vector3 newPos = transform.position;
+            newPos.y = 4.85f;
+
+            // hardcoded currently, based on puzzle X location
+            // when adding more puzzles, refactor!!!
+            if (transform.position.x < 10.0f)
+            {
+                newPos.x = -44.0f;
+
+                if(gameState.puzzle2solved)
+                {
+                    newPos.x = 1.2f;
+                }
+             }
+            else if (transform.position.x > 10.0f)
+            {
+                if (gameState.currCamPos == 2)
+                {
+                    newPos.x = 19.0f;
+                }
+                if(gameState.currCamPos == 3)
+                {
+                    newPos.x = 49.0f;
+                }
+            }
+            transform.position = newPos;
+        }
+        // play sound before respawning
+        if (transform.position.y < -2.0f && transform.position.y > -3.0f)
+        {
+            playerDiedSound.Play();
+        }
+    }
+
+    private void GetInput()
+    {
+        if (usesController)
+        {
+            walkLeftACurrUpdate = Input.GetAxis(CtrlWalkLeftA) == -1;
+            walkLeftBCurrUpdate = Input.GetButton(CtrlWalkLeftB);
+
+            walkRightACurrUpdate = Input.GetAxis(CtrlWalkRightA) == -1;
+            walkRightBCurrUpdate = Input.GetButton(CtrlWalkRightB);
+
+            if (Input.GetButtonDown(CtrlJump))
+            {
+                jumped = true;
+            }
+        }
+        else
+        {
+            walkLeftACurrUpdate = Input.GetButton(KbdWalkLeftA);
+            walkLeftBCurrUpdate = Input.GetButton(KbdWalkLeftB);
+
+            walkRightACurrUpdate = Input.GetButton(KbdWalkRightA);
+            walkRightBCurrUpdate = Input.GetButton(KbdWalkRightB);
+
+            if (Input.GetButtonDown(KbdJump))
+            {
+                jumped = true;
+            }
+        }
+    }
+
+    private void ResetInput()
+    {   
+        walkLeftALastUpdate = walkLeftACurrUpdate;
+        walkLeftBLastUpdate = walkLeftBCurrUpdate;
+
+        walkRightALastUpdate = walkRightACurrUpdate;
+        walkRightBLastUpdate = walkRightBCurrUpdate;
+
+        jumped = false;
+    }
+
+    private bool PlayerMoved()
+    {
+        return walkLeftACurrUpdate || walkLeftBCurrUpdate || walkRightACurrUpdate || walkRightBCurrUpdate;
+    }
+
+    private bool PlayerTriedCheatMovement()
+    {
+        return (walkLeftACurrUpdate && walkLeftBCurrUpdate) || (walkRightACurrUpdate && walkRightBCurrUpdate);
+    }
+
+    private float GetPlayerMoveDirection()
+    {
+        if ((walkRightALastUpdate && walkRightBCurrUpdate) ||
+            (walkRightBLastUpdate && walkRightACurrUpdate))
+        {
+            return 1.0f;
+        }
+        if ((walkLeftALastUpdate && walkLeftBCurrUpdate) ||
+            (walkLeftBLastUpdate && walkLeftACurrUpdate))
+        {
+            return -1.0f;
+        }
+        return 0.0f;
+    }
+
+    private void PlayMoveSound()
+    {
+        if((walkRightALastUpdate && walkRightBCurrUpdate) || (walkLeftALastUpdate && walkLeftBCurrUpdate))
+        {
+            walkSoundA.Play();
+        }
+        if ((walkRightBLastUpdate && walkRightACurrUpdate) || (walkLeftBLastUpdate && walkLeftACurrUpdate))
+        {
+            walkSoundB.Play();
+        }
+    }
+    private void PlayerJump()
     {
         //rb.velocity += jumpSpeed * new Vector3(0.0f, 1.0f, 0.0f);
         rb.AddForce(new Vector3(0.0f, jumpSpeed, 0.0f));
-        if (playerId == 2)
+        
+        if(!jumpSound.isPlaying)
         {
-            if (!jumpSoundPlayer1.isPlaying)
-            {
-                jumpSoundPlayer1.Play();
-            }
-        }
-        if (playerId == 1)
-        {
-            if (!jumpSoundPlayer2.isPlaying)
-            {
-                jumpSoundPlayer2.Play();
-            }
+            jumpSound.Play();
         }
     }
 
-    private void MovePlayer()
+    private void PlayerMove()
     {
-        var isMoving = false;
-
-        // FORWARD
-        if (RTpressedLastUpdate && RSpressedCurrUpdate)
+        if (PlayerMoved())
         {
-            Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-            isMoving = true;
+            if (PlayerTriedCheatMovement())
+            {
+                if (Time.time > lastMovement + walkLimiter)
+                {
+                    lastMovement = Time.time;
+                }
+                else return;
+            }
 
-            walkSoundA.Play();
-        }
-        else if (RSpressedLastUpdate && RTpressedCurrUpdate)
-        {
-            Vector3 movement = new Vector3(1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-            isMoving = true;
-            walkSoundB.Play();
-        }
+            float moveX = GetPlayerMoveDirection();
 
-        // BACKWARD
-        if (LTpressedLastUpdate && LSpressedCurrUpdate)
-        {
-            Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-            isMoving = true;
-            walkSoundA.Play();
-        }
-        else if (LSpressedLastUpdate && LTpressedCurrUpdate)
-        {
-            Vector3 movement = new Vector3(-1.0f, 0.0f, 0.0f);
-            rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
-            isMoving = true;
-            walkSoundB.Play();
-        }
+            if (moveX != 0.0f)
+            {
+                Vector3 movement = new Vector3(moveX, 0.0f, 0.0f);
+                rb.MovePosition(transform.position + (movement * moveSpeed * Time.deltaTime));
 
-        walkAnimation.SetBool("Walking", isMoving);
+                PlayMoveSound();
+            }
+            walkAnimation.SetBool("Walking", true);
+            return;
+        }
+        walkAnimation.SetBool("Walking", false);
     }
+
+    private int GetNumControllersConnected()
+    {
+        int result = 0;
+        string[] controllers = Input.GetJoystickNames();
+
+        for(int i=0;i<controllers.Length;++i)
+        {
+            if(controllers[i] != null && controllers[i] != "")
+            {
+                result++;
+            }
+        }
+        return result;
+    }
+    private bool UseController()
+    {
+        int numControllers = GetNumControllersConnected();
+
+        if (numControllers == 1)
+        {
+            if (playerId == 1)
+            {
+                return true;
+            }
+            return false;
+        }
+        return numControllers > 1;
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Grounded"))
+        {
+            isGrounded = true;
+        }
+    }
+    void OnCollisionExit(Collision collision)
+    {        
+        if (collision.gameObject.CompareTag("Grounded"))
+        {
+            isGrounded = false;
+        }
+    }
+
 }

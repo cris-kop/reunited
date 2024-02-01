@@ -22,7 +22,6 @@ public class PuzzleTwoFenceLowController : MonoBehaviour
     {
         if (!isReleased && isReleasing)
         {
-            Debug.Log("Function to release fence called!");
             if(transform.position.z < maxZbeforeDestroy)
             {
                 Vector3 newPos = transform.position;

@@ -17,7 +17,6 @@ public class VideoControllerScript : MonoBehaviour
     {
         if(Time.time > startTime + videoPlayer.clip.length)
         {
-            Debug.Log("Done!");
             Application.Quit();
         }
 
