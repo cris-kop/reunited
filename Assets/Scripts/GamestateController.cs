@@ -41,6 +41,7 @@ public class GamestateController : MonoBehaviour
     public AudioSource jokeSound3;
 
     private bool instructionsVisible = true;
+    public int instrVisibleSec;
     private float gameStartTime;
 
     void Start()
@@ -53,7 +54,7 @@ public class GamestateController : MonoBehaviour
     {
         if(instructionsVisible)
         {
-            if(Time.time > gameStartTime + 10)
+            if(Time.time > gameStartTime + instrVisibleSec)
             {
                 Destroy(instructions);
                 instructionsVisible = false;

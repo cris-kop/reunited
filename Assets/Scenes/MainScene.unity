@@ -662,6 +662,7 @@ MonoBehaviour:
   jokeSound1: {fileID: 162338189}
   jokeSound2: {fileID: 162338188}
   jokeSound3: {fileID: 162338187}
+  instrVisibleSec: 15
 --- !u!4 &162338185
 Transform:
   m_ObjectHideFlags: 0
@@ -3432,7 +3433,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -3496,8 +3497,8 @@ Transform:
   m_GameObject: {fileID: 685041840}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: -79.8, y: 34.68, z: 4.23}
-  m_LocalScale: {x: -2, y: 1, z: -1.5}
+  m_LocalPosition: {x: -79.8, y: 35.56, z: 4.23}
+  m_LocalScale: {x: -2.8, y: 1, z: -1.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

@@ -596,7 +596,7 @@ VideoPlayer:
   m_AudioOutputMode: 2
   m_TargetAudioSources: []
   m_DirectAudioVolumes: []
-  m_Url: http://www.crealysm.com/games/getstitched-video/endcard-video.mp4
+  m_Url: https://github.com/cris-kop/reunited/raw/main/Assets/Video/endcard-video.mp4
   m_EnabledAudioTracks: 
   m_DirectAudioMutes: 
   m_ControlledAudioTrackCount: 0
